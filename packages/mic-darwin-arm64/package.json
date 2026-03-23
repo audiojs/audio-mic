@@ -1,0 +1,10 @@
+{
+  "name": "@audio/mic-darwin-arm64",
+  "version": "0.0.0",
+  "description": "audio-mic native addon for macOS ARM64",
+  "os": ["darwin"],
+  "cpu": ["arm64"],
+  "main": "mic.node",
+  "files": ["mic.node"],
+  "publishConfig": { "access": "public" }
+}

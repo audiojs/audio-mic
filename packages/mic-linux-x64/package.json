@@ -1,0 +1,10 @@
+{
+  "name": "@audio/mic-linux-x64",
+  "version": "0.0.0",
+  "description": "audio-mic native addon for Linux x64",
+  "os": ["linux"],
+  "cpu": ["x64"],
+  "main": "mic.node",
+  "files": ["mic.node"],
+  "publishConfig": { "access": "public" }
+}
