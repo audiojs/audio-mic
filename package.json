@@ -1,0 +1,65 @@
+{
+  "name": "audio-mic",
+  "version": "0.0.0",
+  "description": "Capture audio from microphone in browser/node",
+  "type": "module",
+  "main": "./index.js",
+  "exports": {
+    ".": {
+      "browser": "./browser.js",
+      "default": "./index.js"
+    }
+  },
+  "browser": {
+    "./index.js": "./browser.js"
+  },
+  "scripts": {
+    "build": "node-gyp rebuild",
+    "test": "node test.js"
+  },
+  "files": [
+    "index.js",
+    "browser.js",
+    "src/",
+    "native/",
+    "binding.gyp",
+    "prebuilds/"
+  ],
+  "gypfile": true,
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/audiojs/audio-mic"
+  },
+  "keywords": [
+    "audio",
+    "audiojs",
+    "pcm",
+    "microphone",
+    "mic",
+    "capture",
+    "record",
+    "input",
+    "web-audio",
+    "miniaudio"
+  ],
+  "author": "Dmitry Iv. <dfcreative@gmail.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/audiojs/audio-mic/issues"
+  },
+  "homepage": "https://github.com/audiojs/audio-mic",
+  "engines": {
+    "node": ">=18"
+  },
+  "optionalDependencies": {
+    "@audio/mic-darwin-x64": ">=0.0.0",
+    "@audio/mic-darwin-arm64": ">=0.0.0",
+    "@audio/mic-linux-x64": ">=0.0.0",
+    "@audio/mic-linux-arm64": ">=0.0.0",
+    "@audio/mic-win32-x64": ">=0.0.0"
+  },
+  "devDependencies": {
+    "prebuildify": "^6.0.1",
+    "tst": "^9.4.0"
+  }
+}
