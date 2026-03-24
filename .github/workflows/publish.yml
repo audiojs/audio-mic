@@ -1,0 +1,35 @@
+name: publish
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: macos-latest
+            pkg: mic-darwin-arm64
+          - os: macos-latest
+            pkg: mic-darwin-x64
+            gyp_args: --arch=x64
+          - os: ubuntu-latest
+            pkg: mic-linux-x64
+          - os: ubuntu-24.04-arm
+            pkg: mic-linux-arm64
+          - os: windows-latest
+            pkg: mic-win32-x64
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm install --ignore-scripts
+      - run: npx node-gyp@latest rebuild ${{ matrix.gyp_args }}
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.pkg }}
+          path: build/Release/mic.node

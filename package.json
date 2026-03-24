@@ -22,7 +22,9 @@
   },
   "scripts": {
     "build": "node-gyp rebuild",
-    "test": "node test.js"
+    "build:x64": "npx node-gyp@latest rebuild --arch=x64 && mkdir -p packages/mic-darwin-x64 && cp build/Release/mic.node packages/mic-darwin-x64/",
+    "test": "node test.js",
+    "version": "node -e \"const v=require('./package.json').version,fs=require('fs');for(const d of fs.readdirSync('packages')){const f='packages/'+d+'/package.json',p=JSON.parse(fs.readFileSync(f));p.version=v;fs.writeFileSync(f,JSON.stringify(p,null,2)+'\\n')}\" && git add packages/*/package.json"
   },
   "files": [
     "index.js",

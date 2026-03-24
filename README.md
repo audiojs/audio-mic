@@ -89,6 +89,12 @@ rm -rf artifacts
 gh run download --dir artifacts \
   -n mic-darwin-arm64 -n mic-darwin-x64 \
   -n mic-linux-x64 -n mic-linux-arm64 -n mic-win32-x64
+
+# (fallback) If darwin-x64 CI is unavailable, cross-compile locally:
+npx node-gyp@latest rebuild --arch=x64
+mkdir -p artifacts/mic-darwin-x64
+cp build/Release/mic.node artifacts/mic-darwin-x64/
+
 for pkg in packages/mic-*/; do
   cp artifacts/$(basename $pkg)/mic.node $pkg/
   (cd $pkg && npm publish)
