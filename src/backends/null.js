@@ -7,16 +7,15 @@ export function open({ sampleRate = 44100, channels = 1, bitDepth = 16, bufferSi
   const bpf = channels * (bitDepth / 8)
   const chunkFrames = Math.round(sampleRate * bufferSize / 1000)
   const chunkBytes = chunkFrames * bpf
-  const intervalMs = bufferSize
   let closed = false
 
   return {
     read(cb) {
-      if (closed) return cb?.(new Error('closed'), null)
+      if (closed) return cb?.(null, null)
       setTimeout(() => {
         if (closed) return cb?.(null, null)
         cb?.(null, Buffer.alloc(chunkBytes))
-      }, intervalMs)
+      }, bufferSize)
     },
     close() { closed = true }
   }

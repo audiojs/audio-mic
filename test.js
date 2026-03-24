@@ -6,7 +6,9 @@ const isCI = !!process.env?.CI
 
 if (isBrowser) test.manual = true
 
-const { default: Mic } = await import(isBrowser ? './browser.js' : './index.js')
+const { default: mic } = await import(isBrowser ? './browser.js' : './index.js')
+
+const open = (opts) => isBrowser ? mic(opts) : mic(opts)
 
 // helper: read N chunks then close
 function capture(read, n = 1) {
@@ -27,7 +29,7 @@ function capture(read, n = 1) {
 // --- core ---
 
 test('capture audio', async () => {
-  const read = await Mic()
+  const read = open()
   ok(read.backend, 'has backend')
   const chunks = await capture(read, 3)
   ok(chunks.length >= 1, 'got ' + chunks.length + ' chunks')
@@ -35,13 +37,13 @@ test('capture audio', async () => {
 })
 
 test('null stops capture', async () => {
-  const read = await Mic()
+  const read = open()
   read(null)
   // should not throw or hang
 })
 
 test('multiple chunks', async () => {
-  const read = await Mic()
+  const read = open()
   const chunks = await capture(read, 5)
   is(chunks.length, 5)
   for (const chunk of chunks) {
@@ -50,7 +52,7 @@ test('multiple chunks', async () => {
 })
 
 test('double close is safe', async () => {
-  const read = await Mic()
+  const read = open()
   const chunks = await capture(read, 1)
   read.close() // second close — should not throw
 })
@@ -58,31 +60,31 @@ test('double close is safe', async () => {
 // --- formats ---
 
 test('mono', async () => {
-  const read = await Mic({ channels: 1 })
+  const read = open({ channels: 1 })
   const chunks = await capture(read, 2)
   ok(chunks.length >= 1)
 })
 
 test('stereo', async () => {
-  const read = await Mic({ channels: 2 })
+  const read = open({ channels: 2 })
   const chunks = await capture(read, 2)
   ok(chunks.length >= 1)
 })
 
 test('48kHz', async () => {
-  const read = await Mic({ sampleRate: 48000 })
+  const read = open({ sampleRate: 48000 })
   const chunks = await capture(read, 2)
   ok(chunks.length >= 1)
 })
 
 test('22050Hz sample rate', async () => {
-  const read = await Mic({ sampleRate: 22050 })
+  const read = open({ sampleRate: 22050 })
   const chunks = await capture(read, 2)
   ok(chunks.length >= 1)
 })
 
 test('96kHz sample rate', async () => {
-  const read = await Mic({ sampleRate: 96000 })
+  const read = open({ sampleRate: 96000 })
   const chunks = await capture(read, 2)
   ok(chunks.length >= 1)
 })
@@ -90,9 +92,8 @@ test('96kHz sample rate', async () => {
 // --- timing ---
 
 test('callback pacing: captured data volume matches real-time', async () => {
-  // Capture for a known wall duration and verify data volume matches
   const sr = 44100, ch = 1, bps = 2
-  const read = await Mic({ sampleRate: sr, channels: ch, bitDepth: 16, bufferSize: 50 })
+  const read = open({ sampleRate: sr, channels: ch, bitDepth: 16, bufferSize: 50 })
   const durationMs = 500
 
   const wallStart = performance.now()
@@ -111,7 +112,6 @@ test('callback pacing: captured data volume matches real-time', async () => {
   const totalBytes = chunks.reduce((a, c) => a + c.length, 0)
   const audioMs = totalBytes / (sr * ch * bps) * 1000
   const ratio = audioMs / wallMs
-  // Captured audio duration should be ~1x wall time (0.5-2.0x)
   ok(ratio > 0.5, `rate ${ratio.toFixed(2)}x (${audioMs.toFixed(0)}ms audio in ${wallMs.toFixed(0)}ms wall)`)
   ok(ratio < 2.0, `rate not too fast: ${ratio.toFixed(2)}x`)
 })
@@ -120,18 +120,16 @@ test('callback pacing: captured data volume matches real-time', async () => {
 
 test('rapid open/close', async () => {
   for (let i = 0; i < 5; i++) {
-    const read = await Mic()
+    const read = open()
     read.close()
   }
 })
 
 test('close during active read must not crash', async () => {
-  const read = await Mic()
-  // start a read, then close immediately
+  const read = open()
   read((err, chunk) => {})
   await new Promise(resolve => setTimeout(resolve, 5))
   read.close()
-  // if we get here without crash, test passes
   ok(true, 'no crash on close during active read')
 })
 
@@ -139,19 +137,17 @@ test('close during active read must not crash', async () => {
 
 if (!isBrowser) {
   test('stream: Readable', async () => {
-    const { default: MicStream } = await import('./stream.js')
-    const mic = new MicStream({ bufferSize: 50 })
+    const { default: readable } = await import('./stream.js')
+    const stream = readable({ bufferSize: 50 })
     const chunks = []
 
     await new Promise((resolve, reject) => {
-      mic.on('data', (chunk) => {
+      stream.on('data', (chunk) => {
         chunks.push(chunk)
-        if (chunks.length >= 3) {
-          mic.destroy()
-        }
+        if (chunks.length >= 3) stream.destroy()
       })
-      mic.on('close', resolve)
-      mic.on('error', reject)
+      stream.on('close', resolve)
+      stream.on('error', reject)
     })
 
     ok(chunks.length >= 3, 'got ' + chunks.length + ' stream chunks')
@@ -159,39 +155,37 @@ if (!isBrowser) {
   })
 
   test('stream: highWaterMark matches buffer size', async () => {
-    const { default: MicStream } = await import('./stream.js')
-    const mic = new MicStream({ sampleRate: 44100, channels: 1, bitDepth: 16, bufferSize: 50 })
+    const { default: readable } = await import('./stream.js')
+    const stream = readable({ sampleRate: 44100, channels: 1, bitDepth: 16, bufferSize: 50 })
     // 50ms × 44100Hz × 1ch × 2bytes = 4410 bytes
-    is(mic.readableHighWaterMark, 4410)
-    mic.destroy()
-    await new Promise(resolve => mic.on('close', resolve))
+    is(stream.readableHighWaterMark, 4410)
+    stream.destroy()
+    await new Promise(resolve => stream.on('close', resolve))
   })
 
   test('stream: destroy mid-capture', async () => {
-    const { default: MicStream } = await import('./stream.js')
-    const mic = new MicStream()
-    mic.resume() // start reading
-    mic.destroy()
-    await new Promise(resolve => mic.on('close', resolve))
+    const { default: readable } = await import('./stream.js')
+    const stream = readable()
+    stream.resume()
+    stream.destroy()
+    await new Promise(resolve => stream.on('close', resolve))
   })
 
   test('explicit miniaudio backend', async () => {
-    const read = await Mic({ backend: 'miniaudio' })
+    const read = open({ backend: 'miniaudio' })
     is(read.backend, 'miniaudio')
     const chunks = await capture(read, 1)
     ok(chunks.length >= 1)
   })
 
   test('captured PCM has valid samples', async () => {
-    // Verify capture produces valid PCM data (proper frame alignment, readable samples)
-    const read = await Mic({ channels: 1, bitDepth: 16 })
+    const read = open({ channels: 1, bitDepth: 16 })
     const chunks = await capture(read, 5)
 
     const all = Buffer.concat(chunks)
     ok(all.length > 0, 'captured data is non-empty')
     ok(all.length % 2 === 0, 'data aligned to 16-bit frames')
 
-    // Check samples are within int16 range (not corrupted)
     let valid = 0
     for (let i = 0; i < all.length - 1; i += 2) {
       const sample = all.readInt16LE(i)
@@ -203,7 +197,7 @@ if (!isBrowser) {
   test('capture: verify chunk sizes match buffer config', async () => {
     const { open } = await import('./src/backends/miniaudio.js')
     const device = open({ sampleRate: 44100, channels: 1, bitDepth: 16, bufferSize: 50 })
-    const bpf = 2 // 1ch × 16bit
+    const bpf = 2
 
     const chunks = []
     await new Promise((resolve) => {

@@ -3,7 +3,7 @@ export interface MicOptions {
   channels?: number
   bitDepth?: 8 | 16 | 24 | 32
   bufferSize?: number
-  backend?: 'miniaudio' | 'process'
+  backend?: 'miniaudio' | 'process' | 'null'
 }
 
 export interface ReadFn {
@@ -14,4 +14,4 @@ export interface ReadFn {
   backend: string
 }
 
-export default function Mic(opts?: MicOptions): Promise<ReadFn>
+export default function mic(opts?: MicOptions): ReadFn

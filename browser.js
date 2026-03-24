@@ -3,8 +3,10 @@
  *
  * Browser audio capture via getUserMedia + AudioWorklet.
  * Falls back to ScriptProcessorNode if AudioWorklet unavailable.
+ *
+ * Note: unlike node, browser mic() is async because getUserMedia requires permission.
  */
-export default async function Mic(opts = {}) {
+export default async function mic(opts = {}) {
   const channels = opts.channels || 1
   const sampleRate = opts.sampleRate || 44100
   const bitDepth = opts.bitDepth || 16
@@ -13,9 +15,9 @@ export default async function Mic(opts = {}) {
     audio: {
       sampleRate: { ideal: sampleRate },
       channelCount: { ideal: channels },
-      echoCancellation: opts.echoCancellation !== undefined ? opts.echoCancellation : false,
-      noiseSuppression: opts.noiseSuppression !== undefined ? opts.noiseSuppression : false,
-      autoGainControl: opts.autoGainControl !== undefined ? opts.autoGainControl : false,
+      echoCancellation: opts.echoCancellation ?? false,
+      noiseSuppression: opts.noiseSuppression ?? false,
+      autoGainControl: opts.autoGainControl ?? false,
     }
   }
 
@@ -24,7 +26,6 @@ export default async function Mic(opts = {}) {
   const ownCtx = !opts.context
   const ctx = opts.context || new AudioContext({ sampleRate })
   const source = ctx.createMediaStreamSource(stream)
-  const actualRate = ctx.sampleRate
 
   let closed = false
   let pending = null

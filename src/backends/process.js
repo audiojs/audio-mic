@@ -21,8 +21,10 @@ function findRecorder(sampleRate, channels, bitDepth) {
   if (tryExec('sox --version'))
     return ['sox', ['-d', '-t', 'raw', '-r', sampleRate, '-c', channels, '-b', bitDepth, '-e', 'signed-integer', '-L', '-']]
 
-  if (os === 'linux' && tryExec('arecord --version'))
-    return ['arecord', ['-f', fmt.toUpperCase(), '-r', sampleRate, '-c', channels, '-t', 'raw']]
+  if (os === 'linux' && tryExec('arecord --version')) {
+    const afmt = bitDepth === 8 ? 'U8' : bitDepth === 32 ? 'FLOAT_LE' : `S${bitDepth}_LE`
+    return ['arecord', ['-f', afmt, '-r', sampleRate, '-c', channels, '-t', 'raw']]
+  }
 
   return null
 }

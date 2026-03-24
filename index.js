@@ -2,7 +2,9 @@
  * @module audio-mic
  *
  * Capture audio data from microphone.
- * Returns read(cb) async source function.
+ * let read = mic({ sampleRate: 44100 })
+ * read((err, chunk) => {})
+ * read(null) // stop
  */
 import { open } from './src/backend.js'
 
@@ -13,9 +15,9 @@ const defaults = {
   bufferSize: 50
 }
 
-export default async function Mic(opts) {
+export default function mic(opts) {
   const config = { ...defaults, ...opts }
-  const { name, device } = await open(config, config.backend)
+  const { name, device } = open(config, config.backend)
 
   read.close = () => { device.close() }
   read.end = () => { device.close() }

@@ -16,4 +16,4 @@ export interface ReadFn {
   backend: 'mediastream'
 }
 
-export default function Mic(opts?: BrowserMicOptions): Promise<ReadFn>
+export default function mic(opts?: BrowserMicOptions): Promise<ReadFn>

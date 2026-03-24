@@ -1,55 +1,28 @@
 /**
  * @module audio-mic/stream
  *
- * Readable stream interface for audio-mic.
+ * Node.js Readable stream for audio capture.
  */
 import { Readable } from 'node:stream'
-import Mic from './index.js'
+import mic from './index.js'
 
-export default class MicStream extends Readable {
-  constructor(opts) {
-    const { sampleRate = 44100, channels = 1, bitDepth = 16, bufferSize = 50 } = opts || {}
-    super({ highWaterMark: Math.round(sampleRate * channels * (bitDepth / 8) * bufferSize / 1000) })
-    this._opts = opts
-    this._read_fn = null
-    this._closed = false
-    this._reading = false
-    this._ready = this._init()
-  }
+export default function readable(opts) {
+  const { sampleRate = 44100, channels = 1, bitDepth = 16, bufferSize = 50 } = opts || {}
+  const read = mic(opts)
 
-  async _init() {
-    this._read_fn = await Mic(this._opts)
-    if (this._closed) this._read_fn.close()
-  }
+  return new Readable({
+    highWaterMark: Math.round(sampleRate * channels * (bitDepth / 8) * bufferSize / 1000),
+    read() { pull(this) },
+    destroy(err, cb) { read.close(); cb(err) }
+  })
 
-  _read() {
-    if (this._reading) return
-    this._reading = true
-    this._ready.then(() => {
-      if (this._closed) return
-      this._pull()
+  function pull(stream) {
+    if (stream.destroyed) return
+    read((err, chunk) => {
+      if (stream.destroyed) return
+      if (err) return stream.destroy(err)
+      if (!chunk) return stream.push(null)
+      if (stream.push(chunk)) pull(stream)
     })
-  }
-
-  _pull() {
-    if (this._closed) return
-    this._read_fn((err, chunk) => {
-      this._reading = false
-      if (err || !chunk) {
-        if (err) this.destroy(err)
-        else this.push(null)
-        return
-      }
-      if (this.push(chunk)) {
-        this._reading = true
-        this._pull()
-      }
-    })
-  }
-
-  _destroy(err, cb) {
-    this._closed = true
-    if (this._read_fn) this._read_fn.close()
-    cb(err)
   }
 }
