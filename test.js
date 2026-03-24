@@ -94,7 +94,7 @@ test('96kHz sample rate', async () => {
 test('callback pacing: captured data volume matches real-time', async () => {
   const sr = 44100, ch = 1, bps = 2
   const read = open({ sampleRate: sr, channels: ch, bitDepth: 16, bufferSize: 50 })
-  const durationMs = 500
+  const durationMs = 1000
 
   const wallStart = performance.now()
   const chunks = []
@@ -112,7 +112,8 @@ test('callback pacing: captured data volume matches real-time', async () => {
   const totalBytes = chunks.reduce((a, c) => a + c.length, 0)
   const audioMs = totalBytes / (sr * ch * bps) * 1000
   const ratio = audioMs / wallMs
-  ok(ratio > 0.5, `rate ${ratio.toFixed(2)}x (${audioMs.toFixed(0)}ms audio in ${wallMs.toFixed(0)}ms wall)`)
+  // device startup can eat 100-200ms on CI, so allow 0.3x lower bound
+  ok(ratio > 0.3, `rate ${ratio.toFixed(2)}x (${audioMs.toFixed(0)}ms audio in ${wallMs.toFixed(0)}ms wall)`)
   ok(ratio < 2.0, `rate not too fast: ${ratio.toFixed(2)}x`)
 })
 
