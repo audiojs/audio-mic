@@ -12,6 +12,7 @@ export interface ReadFn {
   end(): void
   close(): void
   backend: string
+  [Symbol.asyncIterator](): AsyncIterator<Buffer | Uint8Array>
 }
 
 export default function mic(opts?: MicOptions): ReadFn

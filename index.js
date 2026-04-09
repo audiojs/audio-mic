@@ -22,6 +22,15 @@ export default function mic(opts) {
   read.close = () => { device.close() }
   read.end = () => { device.close() }
   read.backend = name
+  read[Symbol.asyncIterator] = () => ({
+    next: () => new Promise((resolve, reject) => {
+      device.read((err, chunk) => {
+        if (err) return reject(err)
+        if (!chunk) return resolve({ done: true, value: undefined })
+        resolve({ done: false, value: chunk })
+      })
+    })
+  })
 
   return read
 

@@ -21,6 +21,17 @@ read((err, pcmBuffer) => {
 read(null) // stop capture
 ```
 
+### Async iterable
+
+```js
+import mic from 'audio-mic'
+
+let read = mic({ sampleRate: 44100, channels: 1 })
+for await (let chunk of read) {
+  // process PCM chunk
+}
+```
+
 ### Node Readable
 
 ```js

@@ -85,6 +85,16 @@ export default async function mic(opts = {}) {
   read.close = close
   read.end = close
   read.backend = 'mediastream'
+  read[Symbol.asyncIterator] = () => ({
+    next: () => new Promise((resolve) => {
+      if (closed) return resolve({ done: true, value: undefined })
+      if (ctx.state === 'suspended') ctx.resume()
+      pending = (err, chunk) => {
+        if (err || !chunk) return resolve({ done: true, value: undefined })
+        resolve({ done: false, value: chunk })
+      }
+    })
+  })
 
   return read
 
