@@ -1,5 +1,5 @@
 {
-  "name": "audio-mic",
+  "name": "@audio/mic",
   "version": "1.1.0",
   "description": "Capture audio from microphone in browser/node",
   "type": "module",
@@ -41,7 +41,7 @@
   "gypfile": true,
   "repository": {
     "type": "git",
-    "url": "https://github.com/audiojs/audio-mic"
+    "url": "git+https://github.com/audiojs/audio-mic.git"
   },
   "keywords": [
     "audio",
@@ -60,7 +60,7 @@
   "bugs": {
     "url": "https://github.com/audiojs/audio-mic/issues"
   },
-  "homepage": "https://github.com/audiojs/audio-mic",
+  "homepage": "https://github.com/audiojs/audio-mic#readme",
   "engines": {
     "node": ">=18"
   },
@@ -74,5 +74,8 @@
   "devDependencies": {
     "prebuildify": "^6.0.1",
     "tst": "^9.4.0"
+  },
+  "publishConfig": {
+    "access": "public"
   }
 }
