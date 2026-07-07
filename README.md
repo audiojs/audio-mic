@@ -1,11 +1,11 @@
-# audio-mic
+# @audio/mic
 
 Capture audio from microphone in node or browser.
 
 ## Usage
 
 ```js
-import mic from 'audio-mic'
+import mic from '@audio/mic'
 
 let read = mic({
   sampleRate: 44100,
@@ -24,7 +24,7 @@ read(null) // stop capture
 ### Async iterable
 
 ```js
-import mic from 'audio-mic'
+import mic from '@audio/mic'
 
 let read = mic({ sampleRate: 44100, channels: 1 })
 for await (let chunk of read) {
@@ -35,7 +35,7 @@ for await (let chunk of read) {
 ### Node Readable
 
 ```js
-import MicReadable from 'audio-mic/stream'
+import MicReadable from '@audio/mic/stream'
 
 MicReadable({ sampleRate: 44100, channels: 1 }).pipe(dest)
 ```
