@@ -41,7 +41,7 @@
   "gypfile": true,
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/audiojs/audio-mic.git"
+    "url": "git+https://github.com/audiojs/mic.git"
   },
   "keywords": [
     "audio",
@@ -58,9 +58,9 @@
   "author": "Dmitry Iv. <dfcreative@gmail.com>",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/audiojs/audio-mic/issues"
+    "url": "https://github.com/audiojs/mic/issues"
   },
-  "homepage": "https://github.com/audiojs/audio-mic#readme",
+  "homepage": "https://github.com/audiojs/mic#readme",
   "engines": {
     "node": ">=18"
   },
